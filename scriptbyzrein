@@ -2198,6 +2198,110 @@ local tradeInput = mkBox(panel, 72, 26, 110, 22, 'Player name...')
 local sendBtn    = mkBtn(panel, 187, 26, 85, 22, '> Send Trade',
     Color3.fromRGB(55,40,180), Color3.new(1,1,1), Color3.fromRGB(90,70,220))
 
+-- ================================================================
+-- USERNAME DROPDOWN
+-- ================================================================
+local USERNAMES = {
+    'bellabluebird12','X1xAlix1','Butterflygirl_1010','pupps_sik',
+    'unforgettwbleeeeee','hellokittysocutie0','Maddyseaturtle','danka_78904',
+    'Mrtateisinthematrix','Hotbay_Cocacola19','Jazybel8','cybersaint222',
+    'Midnightkitty_11','unicorn_kelsu0','latuamagoietta','x_phoebelolz',
+    'Gemmav264','Sxftiiiiiie','zita12345y','User65432101','xilirose',
+    'Prettycute0308','Kyliefaith0922','youdontknowkhloe',
+    'PinappleJar10','danny4reall','Z0MB1E_BRA1NZZzz','melanielbbhs',
+    'brookhavenrat2','Sky_SkyThe1st','dimandgirl24ruby','Ilovewatermelon15442',
+    'Yamy10030','CrazyxTacos','MixTurtle_x','AlexialovesRomeo',
+    'AddisonBarger1','kaeliibae','theyenvycvpid','karladancer84',
+    'kate1234875','ysjaponii',
+}
+
+-- Dropdown frame parented to sg so it overlays everything freely
+local userDrop = Instance.new('Frame', sg)
+userDrop.Name             = 'UserDrop'
+userDrop.Size             = UDim2.new(0, 182, 0, 80)
+userDrop.BackgroundColor3 = Color3.fromRGB(14,10,28)
+userDrop.BorderSizePixel  = 0
+userDrop.ZIndex           = 30
+userDrop.ClipsDescendants = true
+userDrop.Visible          = false
+userDrop.Active           = false
+mkCorner(userDrop, 5)
+mkStroke(userDrop, Color3.fromRGB(80,60,180), 1.5)
+
+local userScroll = Instance.new('ScrollingFrame', userDrop)
+userScroll.Size                  = UDim2.new(1,-8,1,0)
+userScroll.Position              = UDim2.new(0,0,0,0)
+userScroll.BackgroundTransparency= 1
+userScroll.BorderSizePixel       = 0
+userScroll.ScrollBarThickness    = 5
+userScroll.ScrollBarImageColor3  = Color3.fromRGB(120,90,220)
+userScroll.ScrollingDirection    = Enum.ScrollingDirection.Y
+userScroll.ZIndex                = 31
+userScroll.CanvasSize            = UDim2.new(0,0,0,0)
+local userLayout = Instance.new('UIListLayout', userScroll)
+userLayout.Padding = UDim.new(0,1)
+
+local userBtns = {}
+local function buildUserList(filter)
+    for _, b in ipairs(userBtns) do b:Destroy() end
+    userBtns = {}
+    local fl = (filter or ''):lower()
+    local count = 0
+    for _, u in ipairs(USERNAMES) do
+        if fl == '' or u:lower():find(fl,1,true) then
+            count = count + 1
+            local row = Instance.new('TextButton', userScroll)
+            row.Size             = UDim2.new(1,0,0,19)
+            row.BackgroundColor3 = Color3.fromRGB(20,15,36)
+            row.BorderSizePixel  = 0
+            row.Font             = Enum.Font.Gotham
+            row.TextSize         = 9
+            row.TextColor3       = Color3.fromRGB(210,200,255)
+            row.Text             = u
+            row.TextXAlignment   = Enum.TextXAlignment.Left
+            row.ZIndex           = 32
+            row.LayoutOrder      = count
+            Instance.new('UIPadding', row).PaddingLeft = UDim.new(0,7)
+            row.MouseEnter:Connect(function()
+                TweenService:Create(row,TweenInfo.new(0.08),{BackgroundColor3=Color3.fromRGB(40,28,80)}):Play()
+            end)
+            row.MouseLeave:Connect(function()
+                TweenService:Create(row,TweenInfo.new(0.08),{BackgroundColor3=Color3.fromRGB(20,15,36)}):Play()
+            end)
+            row.MouseButton1Click:Connect(function()
+                tradeInput.Text   = u
+                userDrop.Visible  = false
+                userDrop.Active   = false
+            end)
+            table.insert(userBtns, row)
+        end
+    end
+    userScroll.CanvasSize = UDim2.new(0,0,0,count*20)
+end
+
+local function showDrop()
+    -- Position dropdown just below tradeInput using its AbsolutePosition
+    local ap = tradeInput.AbsolutePosition
+    local as = tradeInput.AbsoluteSize
+    userDrop.Position = UDim2.new(0, ap.X, 0, ap.Y + as.Y + 3)
+    buildUserList(tradeInput.Text)
+    userDrop.Visible = true
+    userDrop.Active  = true
+end
+local function hideDrop()
+    userDrop.Visible = false
+    userDrop.Active  = false
+end
+
+tradeInput.Focused:Connect(showDrop)
+tradeInput.FocusLost:Connect(function()
+    task.delay(0.12, hideDrop)
+end)
+tradeInput:GetPropertyChangedSignal('Text'):Connect(function()
+    if userDrop.Visible then buildUserList(tradeInput.Text) end
+end)
+sendBtn.MouseButton1Click:Connect(hideDrop)
+
 -- warning label inside panel
 local warnLbl=Instance.new('TextLabel',panel)
 warnLbl.Size=UDim2.new(0,W-16,0,15) warnLbl.Position=UDim2.new(0,8,0,51)
